@@ -1,0 +1,28 @@
+{
+    "model_name": "Gradient Boosting (Tuned)",
+    "performance": {
+        "test_rmse": 56785.83039963866,
+        "test_r2": 0.7539218222920536,
+        "train_rmse": 47703.53333223621,
+        "train_r2": 0.8297677900260216
+    },
+    "features_used": [
+        "MedInc",
+        "HouseAge",
+        "AveRooms",
+        "AveBedrms",
+        "Latitude",
+        "Households",
+        "IncomePerRoom",
+        "LatLongInteraction",
+        "MedInc_Squared",
+        "MedInc_Cubed",
+        "AgeGroup_Medium",
+        "AgeGroup_Old"
+    ],
+    "training_info": {
+        "date": "2025-12-28 17:02:14",
+        "dataset_size": "20640 samples, 16 features",
+        "train_test_split": "80/20"
+    }
+}
