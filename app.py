@@ -151,292 +151,647 @@ HTML_TEMPLATE = '''
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>California Housing Price Predictor</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
         :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --secondary: #10b981;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --text: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --border: #334155;
+            --ink-900: #121314;
+            --ink-800: #1a1c1f;
+            --ink-700: #262a2f;
+            --mist-100: #edf2ee;
+            --mist-300: #c9d2ca;
+            --mist-500: #8f9b92;
+            --signal: #f7672a;
+            --signal-strong: #ff4d00;
+            --accent: #0d8f7f;
+            --alert: #c43030;
+            --ok: #0d8f7f;
+            --line: #2d3236;
         }
-        
+
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 100%);
+            font-family: 'Space Grotesk', sans-serif;
             min-height: 100vh;
-            color: var(--text);
-            padding: 20px;
+            color: var(--mist-100);
+            background:
+                radial-gradient(1200px 600px at 12% 14%, rgba(247, 103, 42, 0.16), transparent 52%),
+                radial-gradient(900px 700px at 88% 10%, rgba(13, 143, 127, 0.14), transparent 48%),
+                linear-gradient(160deg, #0f1012 0%, #191b1f 42%, #111214 100%);
+            padding: 1rem;
         }
-        
-        .container {
-            max-width: 800px;
+
+        .frame {
+            max-width: 1120px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1rem;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: entrance 650ms cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
         }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
+
+        .hero {
+            position: relative;
+            border: 1px solid var(--line);
+            background: linear-gradient(150deg, rgba(29, 32, 35, 0.92) 0%, rgba(18, 19, 20, 0.9) 100%);
+            padding: clamp(1.2rem, 2.7vw, 2.2rem);
+            overflow: hidden;
         }
-        
-        h1 {
-            font-size: 2.2rem;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
+
+        .hero-grid {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+            gap: 1rem;
+            align-items: end;
         }
-        
-        .subtitle {
-            color: var(--text-secondary);
+
+        .hero-copy {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-rail {
+            border: 1px solid rgba(143, 155, 146, 0.25);
+            background: linear-gradient(160deg, rgba(17, 18, 20, 0.88), rgba(21, 24, 26, 0.82));
+            padding: 0.9rem;
+            display: grid;
+            gap: 0.7rem;
+            min-height: 100%;
+            align-content: start;
+        }
+
+        .rail-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--mist-500);
+        }
+
+        .rail-text {
+            font-size: 0.95rem;
+            color: var(--mist-300);
+            line-height: 1.45;
+        }
+
+        .rail-grid {
+            display: grid;
+            gap: 0.45rem;
+        }
+
+        .rail-item {
+            border: 1px solid rgba(143, 155, 146, 0.22);
+            background: rgba(18, 19, 20, 0.6);
+            padding: 0.55rem;
+            display: grid;
+            gap: 0.2rem;
+        }
+
+        .rail-item small {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--mist-500);
+        }
+
+        .rail-item strong {
+            font-size: 0.96rem;
+            color: var(--mist-100);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                92deg,
+                rgba(18, 19, 20, 0) 0%,
+                rgba(18, 19, 20, 0) 54%,
+                rgba(18, 19, 20, 0.45) 68%,
+                rgba(18, 19, 20, 0.9) 100%
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -34%;
+            right: -14%;
+            width: 47%;
+            height: 210%;
+            background: repeating-linear-gradient(
+                -18deg,
+                rgba(247, 103, 42, 0.13),
+                rgba(247, 103, 42, 0.13) 12px,
+                rgba(13, 143, 127, 0.08) 12px,
+                rgba(13, 143, 127, 0.08) 24px
+            );
+            opacity: 0.72;
+            transform: rotate(-2deg) translateX(8px);
+            -webkit-mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.82) 45%, rgba(0, 0, 0, 0) 100%);
+            mask-image: linear-gradient(to left, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.82) 45%, rgba(0, 0, 0, 0) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5.7vw, 4.8rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            max-width: 10ch;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero p {
+            margin-top: 0.9rem;
+            max-width: 64ch;
+            color: var(--mist-300);
+            position: relative;
+            z-index: 2;
+        }
+
+        .strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.65rem;
+        }
+
+        .stat {
+            border: 1px solid var(--line);
+            background: rgba(18, 19, 20, 0.92);
+            padding: 0.9rem;
+            min-height: 84px;
+            display: grid;
+            align-content: center;
+            animation: rise 500ms ease both;
+        }
+
+        .stat small {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--mist-500);
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .stat strong {
+            margin-top: 0.2rem;
+            font-size: 1.08rem;
+            color: var(--mist-100);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1.3fr 0.9fr;
+            gap: 0.9rem;
+            align-items: start;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            background: rgba(21, 23, 26, 0.96);
+            padding: clamp(1rem, 2vw, 1.45rem);
+        }
+
+        .panel h2 {
             font-size: 1rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--mist-300);
+            margin-bottom: 1rem;
         }
-        
-        .card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
+
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.8rem;
         }
-        
+
         .form-group {
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            gap: 0.45rem;
         }
-        
+
         label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
+            font-size: 0.83rem;
+            color: var(--mist-300);
         }
-        
+
         input {
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 14px;
-            color: var(--text);
-            font-size: 1rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.95rem;
+            background: var(--ink-800);
+            color: var(--mist-100);
+            border: 1px solid #343a3f;
+            border-radius: 0;
+            padding: 0.7rem 0.72rem;
+            min-height: 44px;
+            transition: border-color 180ms ease, transform 180ms ease;
         }
-        
+
         input:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            border-color: var(--signal);
+            transform: translateY(-1px);
         }
-        
+
+        .form-actions {
+            margin-top: 0.9rem;
+            display: flex;
+            gap: 0.7rem;
+            flex-wrap: wrap;
+        }
+
         .btn {
-            width: 100%;
-            padding: 14px;
-            margin-top: 20px;
-            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-            color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
-        }
-        
-        .result {
-            text-align: center;
-            padding: 30px;
-        }
-        
-        .result-label {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            margin-bottom: 10px;
-        }
-        
-        .result-value {
-            font-size: 3rem;
+            border-radius: 0;
+            background: linear-gradient(90deg, var(--signal) 0%, var(--signal-strong) 100%);
+            color: #0b0d0e;
             font-weight: 700;
-            color: var(--secondary);
+            padding: 0.82rem 1rem;
+            min-height: 44px;
+            min-width: 210px;
+            cursor: pointer;
+            transition: transform 200ms ease, filter 200ms ease;
         }
-        
-        .model-info {
+
+        .btn:hover {
+            transform: translateY(-2px) scale(1.01);
+            filter: saturate(1.05);
+        }
+
+        .btn:disabled {
+            cursor: progress;
+            filter: grayscale(0.25);
+            opacity: 0.9;
+        }
+
+        .hint {
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--mist-500);
+            font-size: 0.76rem;
+            letter-spacing: 0.03em;
+            align-self: center;
+        }
+
+        .result-card {
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, rgba(18, 19, 20, 0.96), rgba(29, 32, 35, 0.94));
+            padding: 1rem;
+            min-height: 100%;
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
+            gap: 0.9rem;
+            align-content: start;
         }
-        
-        .info-item {
-            background: var(--bg-dark);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .info-label {
-            color: var(--text-secondary);
-            font-size: 0.75rem;
+
+        .price-label {
+            color: var(--mist-500);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.09em;
+            font-size: 0.72rem;
+            font-family: 'IBM Plex Mono', monospace;
         }
-        
-        .info-value {
-            color: var(--text);
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-top: 5px;
+
+        .price {
+            font-size: clamp(2rem, 5.1vw, 3.2rem);
+            letter-spacing: -0.03em;
+            color: #ffd9c5;
+            word-break: break-word;
         }
-        
+
+        .micro {
+            display: grid;
+            gap: 0.55rem;
+        }
+
+        .micro-item {
+            border: 1px solid var(--line);
+            padding: 0.65rem;
+            background: rgba(18, 19, 20, 0.74);
+        }
+
+        .micro-item small {
+            display: block;
+            color: var(--mist-500);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .micro-item strong {
+            color: var(--mist-100);
+            font-size: 1rem;
+        }
+
         .error {
-            background: #991b1b;
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
+            border: 1px solid #8d2a2a;
+            background: rgba(115, 29, 29, 0.45);
+            color: #ffd5d5;
+            padding: 0.7rem 0.8rem;
+            font-size: 0.9rem;
         }
-        
+
         .hidden {
             display: none;
         }
-        
+
+        .reveal {
+            animation: reveal 350ms ease forwards;
+        }
+
         footer {
             text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: 30px;
+            color: var(--mist-500);
+            font-size: 0.84rem;
+            padding: 0.6rem 0;
+        }
+
+        @keyframes entrance {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes reveal {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 980px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .strip {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 740px) {
+            body {
+                padding: 0.75rem;
+            }
+
+            .hero::after {
+                right: -28%;
+                width: 72%;
+                opacity: 0.45;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .form-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .hint {
+                font-size: 0.72rem;
+                line-height: 1.35;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🏠 California Housing Price Predictor</h1>
-            <p class="subtitle">Gradient Boosting Model • R² Score: 0.754</p>
-        </header>
-        
-        <div class="card">
-            <h2 style="margin-bottom: 20px; font-size: 1.3rem;">Enter Property Details</h2>
-            <form id="predictForm">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="MedInc">Median Income (10k$)</label>
-                        <input type="number" id="MedInc" name="MedInc" step="0.01" value="3.87" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="HouseAge">House Age (years)</label>
-                        <input type="number" id="HouseAge" name="HouseAge" step="1" value="29" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="AveRooms">Avg Rooms</label>
-                        <input type="number" id="AveRooms" name="AveRooms" step="0.01" value="5.43" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="AveBedrms">Avg Bedrooms</label>
-                        <input type="number" id="AveBedrms" name="AveBedrms" step="0.01" value="1.10" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="Population">Population</label>
-                        <input type="number" id="Population" name="Population" step="1" value="1425" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="AveOccup">Avg Occupancy</label>
-                        <input type="number" id="AveOccup" name="AveOccup" step="0.01" value="3.07" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="Latitude">Latitude</label>
-                        <input type="number" id="Latitude" name="Latitude" step="0.01" value="35.63" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="Longitude">Longitude</label>
-                        <input type="number" id="Longitude" name="Longitude" step="0.01" value="-119.57" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="Households">Households</label>
-                        <input type="number" id="Households" name="Households" step="1" value="500" required>
-                    </div>
+    <main class="frame" aria-label="California housing price predictor dashboard">
+        <section class="hero">
+            <div class="hero-grid">
+                <div class="hero-copy">
+                    <h1>California Housing Price Predictor</h1>
+                    <p>
+                        Enter district-level housing signals and estimate a property value with the trained model pipeline.
+                        Inputs are transformed using the same feature engineering and preprocessing used in training.
+                    </p>
                 </div>
-                <button type="submit" class="btn">Predict Price</button>
-            </form>
-        </div>
-        
-        <div class="card hidden" id="resultCard">
-            <div class="result">
-                <p class="result-label">Predicted House Value</p>
-                <p class="result-value" id="predictionValue">$0</p>
+
+                <aside class="hero-rail" aria-label="Model context">
+                    <p class="rail-title">Prediction Context</p>
+                    <p class="rail-text">The estimator is calibrated on engineered socioeconomic and geographic features to support fast pricing previews.</p>
+                    <div class="rail-grid">
+                        <div class="rail-item">
+                            <small>Dataset</small>
+                            <strong>{{ dataset_size }}</strong>
+                        </div>
+                        <div class="rail-item">
+                            <small>Training Date</small>
+                            <strong>{{ training_date }}</strong>
+                        </div>
+                        <div class="rail-item">
+                            <small>Split Strategy</small>
+                            <strong>{{ train_test_split }}</strong>
+                        </div>
+                    </div>
+                </aside>
             </div>
-            <div class="model-info">
-                <div class="info-item">
-                    <p class="info-label">Model</p>
-                    <p class="info-value">Gradient Boosting</p>
+        </section>
+
+        <section class="strip" aria-label="Model quick stats">
+            <article class="stat" style="animation-delay: 40ms;">
+                <small>Model</small>
+                <strong>{{ model_name }}</strong>
+            </article>
+            <article class="stat" style="animation-delay: 120ms;">
+                <small>Test R2</small>
+                <strong>{{ test_r2 }}</strong>
+            </article>
+            <article class="stat" style="animation-delay: 200ms;">
+                <small>Test RMSE</small>
+                <strong>{{ test_rmse }}</strong>
+            </article>
+        </section>
+
+        <section class="layout">
+            <article class="panel">
+                <h2>Input Features</h2>
+                <form id="predictForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="MedInc">Median Income (10k$)</label>
+                            <input type="number" id="MedInc" name="MedInc" step="0.01" min="0" value="3.87" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="HouseAge">House Age (years)</label>
+                            <input type="number" id="HouseAge" name="HouseAge" step="1" min="0" max="100" value="29" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="AveRooms">Average Rooms</label>
+                            <input type="number" id="AveRooms" name="AveRooms" step="0.01" min="0" value="5.43" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="AveBedrms">Average Bedrooms</label>
+                            <input type="number" id="AveBedrms" name="AveBedrms" step="0.01" min="0" value="1.10" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="Population">Population</label>
+                            <input type="number" id="Population" name="Population" step="1" min="0" value="1425" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="AveOccup">Average Occupancy</label>
+                            <input type="number" id="AveOccup" name="AveOccup" step="0.01" min="0" value="3.07" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="Latitude">Latitude</label>
+                            <input type="number" id="Latitude" name="Latitude" step="0.01" min="-90" max="90" value="35.63" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="Longitude">Longitude</label>
+                            <input type="number" id="Longitude" name="Longitude" step="0.01" min="-180" max="180" value="-119.57" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="Households">Households</label>
+                            <input type="number" id="Households" name="Households" step="1" min="1" value="500" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" id="predictBtn" class="btn">Estimate Price</button>
+                        <span class="hint">Pipeline includes scaling + feature selection</span>
+                    </div>
+                </form>
+            </article>
+
+            <aside class="result-card" aria-live="polite">
+                <div>
+                    <p class="price-label">Predicted House Value</p>
+                    <p class="price" id="predictionValue">$0</p>
                 </div>
-                <div class="info-item">
-                    <p class="info-label">Test RMSE</p>
-                    <p class="info-value">$56,786</p>
+
+                <div class="micro">
+                    <div class="micro-item">
+                        <small>Model Family</small>
+                        <strong>{{ model_family }}</strong>
+                    </div>
+                    <div class="micro-item">
+                        <small>Generalization RMSE</small>
+                        <strong>{{ test_rmse }}</strong>
+                    </div>
                 </div>
-            </div>
-        </div>
-        
-        <div class="error hidden" id="errorMessage"></div>
-        
+
+                <div id="errorMessage" class="error hidden" role="alert"></div>
+            </aside>
+        </section>
+
         <footer>
-            <p>California Housing Price Prediction Model</p>
-            <p>Built with Flask & scikit-learn</p>
+            California Housing Price Prediction | Flask + scikit-learn
         </footer>
-    </div>
-    
+    </main>
+
     <script>
-        document.getElementById('predictForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            const data = {};
+        const form = document.getElementById('predictForm');
+        const predictBtn = document.getElementById('predictBtn');
+        const predictionValue = document.getElementById('predictionValue');
+        const errorMessage = document.getElementById('errorMessage');
+
+        function formatCurrency(value) {
+            return '$' + Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const formData = new FormData(form);
+            const payload = {};
             formData.forEach((value, key) => {
-                data[key] = parseFloat(value);
+                payload[key] = Number.parseFloat(value);
             });
-            
+
+            const requiredFields = ['MedInc', 'HouseAge', 'AveRooms', 'AveBedrms', 'Population', 'AveOccup', 'Latitude', 'Longitude', 'Households'];
+            for (const field of requiredFields) {
+                if (!Number.isFinite(payload[field])) {
+                    errorMessage.textContent = 'Error: Please provide valid numeric values for all fields.';
+                    errorMessage.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            if (payload.Latitude < -90 || payload.Latitude > 90 || payload.Longitude < -180 || payload.Longitude > 180) {
+                errorMessage.textContent = 'Error: Latitude must be between -90 and 90, and Longitude between -180 and 180.';
+                errorMessage.classList.remove('hidden');
+                return;
+            }
+
+            predictBtn.disabled = true;
+            predictBtn.textContent = 'Estimating...';
+            errorMessage.classList.add('hidden');
+
             try {
                 const response = await fetch('/predict', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
-                
+
                 const result = await response.json();
-                
-                if (result.success) {
-                    document.getElementById('resultCard').classList.remove('hidden');
-                    document.getElementById('errorMessage').classList.add('hidden');
-                    document.getElementById('predictionValue').textContent = '$' + result.prediction.toLocaleString('en-US', {maximumFractionDigits: 0});
-                } else {
-                    document.getElementById('resultCard').classList.add('hidden');
-                    document.getElementById('errorMessage').classList.remove('hidden');
-                    document.getElementById('errorMessage').textContent = 'Error: ' + result.error;
+
+                if (!result.success) {
+                    throw new Error(result.error || 'Prediction failed');
                 }
-            } catch (error) {
-                document.getElementById('resultCard').classList.add('hidden');
-                document.getElementById('errorMessage').classList.remove('hidden');
-                document.getElementById('errorMessage').textContent = 'Error: ' + error.message;
+
+                predictionValue.textContent = formatCurrency(result.prediction);
+                predictionValue.classList.remove('reveal');
+                void predictionValue.offsetWidth;
+                predictionValue.classList.add('reveal');
+            } catch (err) {
+                errorMessage.textContent = 'Error: ' + (err.message || 'Unexpected issue');
+                errorMessage.classList.remove('hidden');
+            } finally {
+                predictBtn.disabled = false;
+                predictBtn.textContent = 'Estimate Price';
             }
         });
     </script>
@@ -447,13 +802,37 @@ HTML_TEMPLATE = '''
 @app.route('/')
 def home():
     """Render the main prediction page."""
-    return render_template_string(HTML_TEMPLATE)
+    if model_metrics is None:
+        load_model()
+
+    model_name = model_metrics.get('model_name', 'Gradient Boosting') if model_metrics else 'Gradient Boosting'
+    performance = model_metrics.get('performance', {}) if model_metrics else {}
+    test_r2 = performance.get('test_r2', 0.0)
+    test_rmse = performance.get('test_rmse', 0.0)
+    training_info = model_metrics.get('training_info', {}) if model_metrics else {}
+
+    return render_template_string(
+        HTML_TEMPLATE,
+        model_name=model_name,
+        model_family='Gradient Boosting',
+        test_r2=f"{test_r2:.3f}",
+        test_rmse=f"${test_rmse:,.0f}",
+        dataset_size=training_info.get('dataset_size', '20640 samples, 16 features'),
+        training_date=training_info.get('date', 'N/A'),
+        train_test_split=training_info.get('train_test_split', '80/20')
+    )
 
 @app.route('/predict', methods=['POST'])
 def predict():
     """API endpoint for making predictions."""
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
+
+        if not isinstance(data, dict):
+            return jsonify({
+                'success': False,
+                'error': 'Invalid JSON payload.'
+            }), 400
         
         # Extract features
         features = {
@@ -481,7 +860,7 @@ def predict():
         return jsonify({
             'success': False,
             'error': str(e)
-        })
+        }), 400
 
 @app.route('/api/model-info', methods=['GET'])
 def model_info():
@@ -511,8 +890,11 @@ if __name__ == '__main__':
         print("\nStarting Flask server...")
         print("Open http://127.0.0.1:5000 in your browser\n")
         
-        # Run the app
-        app.run(debug=True, host='127.0.0.1', port=5000)
+        # Run the app (debug disabled by default for safer public demos)
+        debug_mode = os.getenv('FLASK_DEBUG', '0') == '1'
+        host = os.getenv('FLASK_HOST', '127.0.0.1')
+        port = int(os.getenv('FLASK_PORT', '5000'))
+        app.run(debug=debug_mode, host=host, port=port)
         
     except Exception as e:
         print(f"\n✗ Error loading model: {e}")
