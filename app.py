@@ -875,7 +875,12 @@ def model_info():
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint."""
-    return jsonify({'status': 'healthy', 'model_loaded': model is not None})
+    try:
+        if model is None:
+            load_model()
+        return jsonify({'status': 'healthy', 'model_loaded': model is not None})
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'model_loaded': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     # Load the model on startup
