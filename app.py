@@ -888,12 +888,13 @@ if __name__ == '__main__':
         print("\n✓ Application ready!")
         print("=" * 50)
         print("\nStarting Flask server...")
-        print("Open http://127.0.0.1:5000 in your browser\n")
         
         # Run the app (debug disabled by default for safer public demos)
         debug_mode = os.getenv('FLASK_DEBUG', '0') == '1'
-        host = os.getenv('FLASK_HOST', '127.0.0.1')
-        port = int(os.getenv('FLASK_PORT', '5000'))
+        host = os.getenv('FLASK_HOST', '0.0.0.0')  # Listen on all interfaces for deployment
+        port = int(os.getenv('PORT', os.getenv('FLASK_PORT', '5000')))  # Use PORT env var for Railway/Render
+        
+        print(f"Running on http://0.0.0.0:{port}\n")
         app.run(debug=debug_mode, host=host, port=port)
         
     except Exception as e:
