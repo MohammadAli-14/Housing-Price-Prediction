@@ -10,6 +10,7 @@ Date: 2025-12-28
 
 import os
 import json
+from datetime import datetime
 import numpy as np
 import pandas as pd
 import joblib
@@ -643,7 +644,7 @@ HTML_TEMPLATE = '''
                             <strong>{{ dataset_size }}</strong>
                         </div>
                         <div class="rail-item">
-                            <small>Training Date</small>
+                            <small>Deployment Date</small>
                             <strong>{{ training_date }}</strong>
                         </div>
                         <div class="rail-item">
@@ -833,6 +834,8 @@ def home():
     test_rmse = performance.get('test_rmse', 0.0)
     training_info = model_metrics.get('training_info', {}) if model_metrics else {}
     deployment_error = model_load_error
+    # Prefer an explicit deployment date from env; otherwise use server UTC date.
+    deployment_date = os.getenv('DEPLOYMENT_DATE', datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
 
     return render_template_string(
         HTML_TEMPLATE,
@@ -841,7 +844,7 @@ def home():
         test_r2=f"{test_r2:.3f}",
         test_rmse=f"${test_rmse:,.0f}",
         dataset_size=training_info.get('dataset_size', '20640 samples, 16 features'),
-        training_date=training_info.get('date', 'N/A'),
+        training_date=deployment_date,
         train_test_split=training_info.get('train_test_split', '80/20'),
         deployment_error=deployment_error
     )
