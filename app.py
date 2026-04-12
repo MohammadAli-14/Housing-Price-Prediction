@@ -29,31 +29,43 @@ scaler = None
 feature_selector = None
 selected_features = None
 model_metrics = None
+model_load_error = None
 
 def load_model():
     """Load the trained model and metrics."""
-    global model_dict, model, scaler, feature_selector, selected_features, model_metrics
+    global model_dict, model, scaler, feature_selector, selected_features, model_metrics, model_load_error
     
+    model_load_error = None
+
     if os.path.exists(MODEL_PATH):
-        model_dict = joblib.load(MODEL_PATH)
-        
-        # Extract components from the dictionary
-        if isinstance(model_dict, dict):
-            model = model_dict.get('model')
-            scaler = model_dict.get('scaler')
-            feature_selector = model_dict.get('feature_selector')
-            selected_features = model_dict.get('selected_features')
-            print(f"✓ Model components loaded from {MODEL_PATH}")
-            print(f"  - Model: {type(model).__name__}")
-            print(f"  - Scaler: {type(scaler).__name__ if scaler else 'None'}")
-            print(f"  - Feature Selector: {type(feature_selector).__name__ if feature_selector else 'None'}")
-            print(f"  - Selected Features: {len(selected_features) if selected_features else 0} features")
-        else:
-            # If it's already a model, use it directly
-            model = model_dict
-            print(f"✓ Model loaded from {MODEL_PATH}")
+        try:
+            model_dict = joblib.load(MODEL_PATH)
+
+            # Extract components from the dictionary
+            if isinstance(model_dict, dict):
+                model = model_dict.get('model')
+                scaler = model_dict.get('scaler')
+                feature_selector = model_dict.get('feature_selector')
+                selected_features = model_dict.get('selected_features')
+                print(f"✓ Model components loaded from {MODEL_PATH}")
+                print(f"  - Model: {type(model).__name__}")
+                print(f"  - Scaler: {type(scaler).__name__ if scaler else 'None'}")
+                print(f"  - Feature Selector: {type(feature_selector).__name__ if feature_selector else 'None'}")
+                print(f"  - Selected Features: {len(selected_features) if selected_features else 0} features")
+            else:
+                # If it's already a model, use it directly
+                model = model_dict
+                print(f"✓ Model loaded from {MODEL_PATH}")
+        except Exception as exc:
+            model = None
+            scaler = None
+            feature_selector = None
+            selected_features = None
+            model_load_error = str(exc)
+            print(f"✗ Failed to load model from {MODEL_PATH}: {exc}")
     else:
-        raise FileNotFoundError(f"Model file not found: {MODEL_PATH}")
+        model_load_error = f"Model file not found: {MODEL_PATH}"
+        print(f"✗ {model_load_error}")
     
     if os.path.exists(METRICS_PATH):
         with open(METRICS_PATH, 'r') as f:
@@ -119,6 +131,8 @@ def predict_price(features_dict):
     
     if model is None:
         load_model()
+    if model is None:
+        raise RuntimeError(f"Model unavailable: {model_load_error or 'Unknown model loading error'}")
     
     # Create DataFrame from input
     df = pd.DataFrame([features_dict])
@@ -604,6 +618,12 @@ HTML_TEMPLATE = '''
 </head>
 <body>
     <main class="frame" aria-label="California housing price predictor dashboard">
+        {% if deployment_error %}
+        <section class="error" role="alert" aria-live="polite">
+            <strong>Model initialization error:</strong> {{ deployment_error }}
+        </section>
+        {% endif %}
+
         <section class="hero">
             <div class="hero-grid">
                 <div class="hero-copy">
@@ -802,7 +822,9 @@ HTML_TEMPLATE = '''
 @app.route('/')
 def home():
     """Render the main prediction page."""
-    if model_metrics is None:
+    global model_load_error
+
+    if model_metrics is None and model is None:
         load_model()
 
     model_name = model_metrics.get('model_name', 'Gradient Boosting') if model_metrics else 'Gradient Boosting'
@@ -810,6 +832,7 @@ def home():
     test_r2 = performance.get('test_r2', 0.0)
     test_rmse = performance.get('test_rmse', 0.0)
     training_info = model_metrics.get('training_info', {}) if model_metrics else {}
+    deployment_error = model_load_error
 
     return render_template_string(
         HTML_TEMPLATE,
@@ -819,13 +842,20 @@ def home():
         test_rmse=f"${test_rmse:,.0f}",
         dataset_size=training_info.get('dataset_size', '20640 samples, 16 features'),
         training_date=training_info.get('date', 'N/A'),
-        train_test_split=training_info.get('train_test_split', '80/20')
+        train_test_split=training_info.get('train_test_split', '80/20'),
+        deployment_error=deployment_error
     )
 
 @app.route('/predict', methods=['POST'])
 def predict():
     """API endpoint for making predictions."""
     try:
+        if model_load_error is not None:
+            return jsonify({
+                'success': False,
+                'error': f'Model unavailable: {model_load_error}'
+            }), 503
+
         data = request.get_json(silent=True) or {}
 
         if not isinstance(data, dict):
@@ -878,7 +908,13 @@ def health_check():
     try:
         if model is None:
             load_model()
-        return jsonify({'status': 'healthy', 'model_loaded': model is not None})
+        if model is None:
+            return jsonify({
+                'status': 'unhealthy',
+                'model_loaded': False,
+                'error': model_load_error or 'Model failed to load'
+            }), 500
+        return jsonify({'status': 'healthy', 'model_loaded': True})
     except Exception as e:
         return jsonify({'status': 'unhealthy', 'model_loaded': False, 'error': str(e)}), 500
 
